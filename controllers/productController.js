@@ -1,10 +1,37 @@
 import Product from "../models/Product.js";
 
 export const getProducts = async (req, res) => {
-  const products = await Product.find()
-    .populate("category", "name")
-    .sort({ createdAt: -1 });
-  res.json(products);
+  try {
+    const { search, category } = req.query;
+
+    let filter = {};
+
+    if (search) {
+      filter.name = { $regex: search, $options: "i" };
+    }
+
+    if (category) {
+      filter.category = category;
+    }
+
+    const products = await Product.find(filter).populate("category");
+
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getProductById = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    res.json(product);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
 export const createProduct = async (req, res) => {
@@ -18,10 +45,8 @@ export const createProduct = async (req, res) => {
         .json({ error: "Product with this name already exist" });
     }
 
-    // ✅ image path
     const image = req.file ? `/uploads/${req.file.filename}` : "";
 
-    // ✅ create product
     const product = await Product.create({
       name,
       price,
