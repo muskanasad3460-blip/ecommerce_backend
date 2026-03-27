@@ -3,7 +3,10 @@ import { protect } from "../middleware/authMiddleware.js";
 
 router.post("/", protect, upload.single("image"), createProduct);
 
-const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new error("JWT_SECRET not defined");
+}
 
 export const protect = (req, res, next) => {
   const authHeader = req.headers.authorization;

@@ -2,7 +2,9 @@ import Product from "../models/Product.js";
 
 export const getProducts = async (req, res) => {
   try {
-    const { search, category } = req.query;
+    const { search = "", category = "", page = 1 } = req.query;
+    const limit = 8;
+    const skip = (page - 1) * limit;
 
     let filter = {};
 
@@ -13,10 +15,19 @@ export const getProducts = async (req, res) => {
     if (category) {
       filter.category = category;
     }
+    const total = await Product.countDocuments(filter);
 
-    const products = await Product.find(filter).populate("category");
+    const products = await Product.find(filter)
+      .populate("category")
+      .skip(skip)
+      .limit(Number(limit));
 
-    res.json(products);
+    res.json({
+      products,
+      total,
+      page: Number(page),
+      totalPages: Math.ceil(total / limit),
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

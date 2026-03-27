@@ -36,3 +36,23 @@ export const login = async (req, res) => {
     res.status(500).json({ error: "Server Error" });
   }
 };
+// authController.js
+export const loginUser = async (req, res) => {
+  const { email, password } = req.body;
+  const user = await findUser(email, password);
+
+  if (!user) return res.status(401).json({ message: "Invalid credentials" });
+
+  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    expiresIn: "1h",
+  });
+
+  res
+    .cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 3600 * 1000,
+    })
+    .json({ message: "Logged in successfully" });
+};
