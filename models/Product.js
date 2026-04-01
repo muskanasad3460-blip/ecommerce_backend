@@ -12,6 +12,12 @@ const productSchema = new mongoose.Schema(
       ref: "Category",
     },
     image: String,
+
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
   },
   { timestamps: true }
 );

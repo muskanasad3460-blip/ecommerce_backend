@@ -1,32 +1,22 @@
 import express from "express";
 import {
   getProducts,
-  getProductById,
   createProduct,
-  updateProduct,
   deleteProduct,
+  updateProduct,
+  getProductById,
+  getAllProductsPublic,
 } from "../controllers/productController.js";
 
-import Product from "../models/Product.js";
-import multer from "multer";
+import { protect } from "../middleware/authMiddleware.js";
+import upload from "../middleware/upload.js";
 
 const router = express.Router();
-
-const storage = multer.diskStorage({
-  destination: "uploads/",
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
-
-const upload = multer({ storage });
-
-router.get("/", getProducts);
-
-router.get("/:id", getProductById);
-
-router.post("/", upload.single("image"), createProduct);
-router.put("/:id", updateProduct);
-router.delete("/:id", deleteProduct);
+router.get("/public", getAllProductsPublic);
+router.get("/", protect, getProducts);
+router.get("/:id", protect, getProductById);
+router.post("/", protect, upload.single("image"), createProduct);
+router.delete("/:id", protect, deleteProduct);
+router.put("/:id", protect, updateProduct);
 
 export default router;
